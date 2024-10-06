@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cesar Cipher Encoder</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+      }
+      .column {
+        flex: 1;
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+      }
+      button,
+      input {
+        margin-top: 10px;
+      }
+      .shift-input {
+        width: 50px;
+      }
+      .error {
+        color: red;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Szyfrator/Deszyfrator Szyfru Cezara</h1>
+    <div>
+      <label for="shiftInput">Klucz szyfrujący: </label>
+      <input
+        type="number"
+        id="shiftInput"
+        class="shift-input"
+        value="3"
+        min="1"
+        max="25"
+      />
+      <div id="shiftError" class="error"></div>
+    </div>
+    <div class="container">
+      <div class="column">
+        <h2>Szyfrowanie</h2>
+        <h3>Tekst wejściowy</h3>
+        <textarea
+          id="inputText"
+          placeholder="Wprowadź tekst do zakodowania..."
+        ></textarea>
+        <div id="inputError" class="error"></div>
+        <button onclick="encodeText()">Zakoduj</button>
+        <h3>Tekst zakodowany</h3>
+        <textarea id="outputText" readonly></textarea>
+      </div>
+      <div class="column">
+        <h2>Odszyfrowanie</h2>
+        <h3>Tekst zakodowany</h3>
+        <textarea
+          id="decodedText"
+          placeholder="Wprowadź tekst do odkodowania..."
+        ></textarea>
+        <div id="decodedError" class="error"></div>
+        <button onclick="decodeText()">Odkoduj</button>
+        <h3>Tekst odszyfrowany</h3>
+        <textarea id="decodedOutput" readonly></textarea>
+      </div>
+    </div>
+
+    <script>
+      function validateShift() {
+        const shiftInput = document.getElementById("shiftInput");
+        const shiftError = document.getElementById("shiftError");
+        const shift = parseInt(shiftInput.value);
+
+        if (isNaN(shift) || shift < 1 || shift > 25) {
+          shiftError.textContent =
+            "Klucz szyfrujący musi być liczbą od 1 do 25.";
+          return false;
+        }
+        shiftError.textContent = "";
+        return true;
+      }
+
+      function validateInput(inputId, errorId) {
+        const input = document.getElementById(inputId);
+        const error = document.getElementById(errorId);
+
+        if (input.value.trim() === "") {
+          error.textContent = "Pole tekstowe nie może być puste.";
+          return false;
+        }
+        error.textContent = "";
+        return true;
+      }
+      function preprocessText(text) {
+        return text.replace(/[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, "");
+      }
+
+      function cesarCipher(text, shift) {
+        return text
+          .split("")
+          .map((char) => {
+            const code = char.charCodeAt(0);
+            if (code >= 97 && code <= 122) {
+              return String.fromCharCode(((code - 97 + shift) % 26) + 97);
+            }
+            if (code >= 65 && code <= 90) {
+              return String.fromCharCode(((code - 65 + shift) % 26) + 65);
+            }
+            return char;
+          })
+          .join("");
+      }
+
+      function getShift() {
+        return parseInt(document.getElementById("shiftInput").value);
+      }
+
+      function encodeText() {
+        if (!validateShift() || !validateInput("inputText", "inputError")) {
+          return;
+        }
+
+        const inputText = document.getElementById("inputText").value;
+        const preprocessedText = preprocessText(inputText);
+        const shift = getShift();
+        const encodedText = cesarCipher(preprocessedText, shift);
+        document.getElementById("outputText").value = encodedText;
+      }
+
+      function decodeText() {
+        if (!validateShift() || !validateInput("decodedText", "decodedError")) {
+          return;
+        }
+
+        const encodedText = document.getElementById("decodedText").value;
+        const shift = getShift();
+        const decodedText = cesarCipher(encodedText, 26 - shift);
+        document.getElementById("decodedOutput").value = decodedText;
+      }
+
+      document
+        .getElementById("shiftInput")
+        .addEventListener("input", validateShift);
+    </script>
+  </body>
+</html>
